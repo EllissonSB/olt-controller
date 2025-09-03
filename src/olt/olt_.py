@@ -12,9 +12,7 @@ class OLT:
             raise Exception("As variáveis de ambiente 'username' e 'password' devem ser definidas.")
         self.boards_pons = []
         self.boards_pons_autofind = []
-        self.define_boards_gpons()
-        self.defines_boards_autofind()
-    def conectar(self):
+    def _conectar(self):
         #Inicia a conexão
         self.client = paramiko.SSHClient()
         self.client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -25,10 +23,6 @@ class OLT:
             raise Exception("Falha na autenticação. Verifique as credenciais.")
         except paramiko.SSHException as e:
             raise Exception(f"Erro na conexão SSH: {str(e)}")
-        #comando de enable e config para ficar no modo de configuração da olt
-        self.client.exec_command("en")
-        self.client.exec_command("conf")
-
     def _ssh_execute(self, command):
         stdin, stdout, stderr = self.client.exec_command(command)
         error = stderr.read().decode('utf-8')
@@ -52,3 +46,9 @@ class OLT:
 
     def defines_boards_autofind(self):
         self._define_boards("AutoFind", self.boards_pons_autofind)
+    def init_connection(self):
+        self._conectar()
+        self._ssh_execute("en")
+        self._ssh_execute("config")
+        self.define_boards_gpons()
+        self.defines_boards_autofind()
