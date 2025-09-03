@@ -1,147 +1,54 @@
-import telnetlib
-from ..bd import bd_
-from ..func.funcitons_ import *
-class OLTMETA(type):
-    _instances={}
-    def __call__(cls, *args, **kwds):
-        if cls not in cls._instances:
-            instance=super().__call__(*args, **kwds)
-            cls._instances[cls]=instance
-        return cls._instances[cls]
-class OLTSingleton_BJ(metaclass=OLTMETA):
-    def __init__(self):
-        self._bd=bd_.bridge_bd()
-        self.__ip='ip_olt'
-        self.__user='user_olt'
-        self.__password="password_olt"
-        self.__dic_profile={'145':"Generic_V145",'105':'Generic_2_V105'}
-        self.__name="name_olt"
-        self.__service_port=self._bd.get_service_port_bj()[0][0]+1
+import os
+import paramiko
+
+class OLT:
+    MODELOS_PON_PORTS=['H806GPFD','H805GPFD','H903GPSF','H901GPSF']
+    def __init__(self, modelo, ip):
+        self.modelo = modelo
+        self.ip = ip
+        self.username = os.getenv("username")
+        self.password = os.getenv("password")
+        if not self.username or not self.password:
+            raise Exception("As variáveis de ambiente 'username' e 'password' devem ser definidas.")
+        self.boards_pons = []
+        self.boards_pons_autofind = []
+        self.define_boards_gpons()
+        self.defines_boards_autofind()
+    def conectar(self):
+        #Inicia a conexão
+        self.client = paramiko.SSHClient()
+        self.client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         try:
-            self.t=telnetlib.Telnet(self.get_ip())
-            self.t.read_until(b">>User name:")
-            self.t.write(self.get_user().encode('ascii') + b"\n")
-            self.t.read_until(b">>User password:")
-            self.t.write(self.get_password().encode('ascii') + b"\n")
-            self.t.write(b"enable \n")
-            self.t.read_until(b"#")
-            self.t.write(b"config \n")
-        except:
-            self.connect()
-    def connect(self):
-        try:
-            self.t=telnetlib.Telnet(self.get_ip())
-            self.t.read_until(b">>User name:")
-            self.t.write(self.get_user().encode('ascii') + b"\n")
-            self.t.read_until(b">>User password:")
-            self.t.write(self.get_password().encode('ascii') + b"\n")
-            self.t.write(b"enable \n")
-            self.t.read_until(b"#")
-            self.t.write(b"config \n")
-        except:
-            self.connect()
-    def set_service_port(self):
-        self.__service_port+=1
-    def get_service_port(self):
-        return self.__service_port
-    def get_ip(self):
-        return self.__ip
-    def get_user(self):
-        return self.__user
-    def get_password(self):
-        return self.__password
-    def get_dic(self,value):
-        return self.__dic_profile[str(value)]
-    def get_name(self):
-        return self.__name
-class OLTSingleton_UMB(metaclass=OLTMETA):
-    def __init__(self):
-        self.__ip='ip_olt'
-        self.__user='user_olt'
-        self.__password="password_olt"
-        self.__dic_profile={'145':"Generic_V145"}
-        self.__name="nmae_olt"
-        try:
-            self.t=telnetlib.Telnet(self.get_ip())
-            self.t.read_until(b">>User name:")
-            self.t.write(self.get_user().encode('ascii') + b"\n")
-            self.t.read_until(b">>User password:")
-            self.t.write(self.get_password().encode('ascii') + b"\n")
-            self.t.write(b"enable \n")
-            self.t.read_until(b"#")
-            self.t.write(b"config \n")
-        except:
-            self.connect()
-    def connect(self):
-        try:
-            self.t=telnetlib.Telnet(self.get_ip())
-            self.t.read_until(b">>User name:")
-            self.t.write(self.get_user().encode('ascii') + b"\n")
-            self.t.read_until(b">>User password:")
-            self.t.write(self.get_password().encode('ascii') + b"\n")
-            self.t.write(b"enable \n")
-            self.t.read_until(b"#")
-            self.t.write(b"config \n")
-        except:
-            self.connect()
-    def get_ip(self):
-        return self.__ip
-    def get_user(self):
-        return self.__user
-    def get_password(self):
-        return self.__password
-    def get_dic(self,value):
-        return self.__dic_profile[str(value)]
-    def get_name(self):
-        return self.__name
-class OLTSingleton_MB(metaclass=OLTMETA):
-    def __init__(self):
-        self.__ip='ip_olt'
-        self.__user='user_olt'
-        self.__password="password_olt"
-        self.__name="name_olt"
-        self.__dic_profile={'145':"Generic_V145"}
-        try:
-            self.t=telnetlib.Telnet(self.get_ip())
-            self.t.read_until(b">>User name:")
-            self.t.write(self.get_user().encode('ascii') + b"\n")
-            self.t.read_until(b">>User password:")
-            self.t.write(self.get_password().encode('ascii') + b"\n")
-            self.t.write(b"enable \n")
-            self.t.read_until(b"#")
-            self.t.write(b"config \n")
-        except:
-            self.connect()
-    def connect(self):
-        try:
-            self.t=telnetlib.Telnet(self.get_ip())
-            self.t.read_until(b">>User name:")
-            self.t.write(self.get_user().encode('ascii') + b"\n")
-            self.t.read_until(b">>User password:")
-            self.t.write(self.get_password().encode('ascii') + b"\n")
-            self.t.write(b"enable \n")
-            self.t.read_until(b"#")
-            self.t.write(b"config \n")
-        except:
-            self.connect()
-    def get_ip(self):
-        return self.__ip
-    def get_user(self):
-        return self.__user
-    def get_password(self):
-        return self.__password
-    def get_name(self):
-        return self.__name
-    def get_dic(self,value):
-        return self.__dic_profile[value]
-class bridge_olt:
-    def liberar(self,olt,ont):
-        liberar_fun(olt,ont)
-    def service_port(self,olt,ont):
-        service_port_fun(olt,ont)
-    def service_port_generic(self,olt,ont):
-        service_port_generic_fun(olt,ont)
-    def delete(self,olt,ont):
-        delete_fun(olt,ont)
-    def delet_sn(self,olt,ont):
-        delet_sn_fun(olt,ont)
+            self.client.connect(self.ip, username=self.username, password=self.password)
+            print(f"Conexão estabelecida com {self.ip}")
+        except paramiko.AuthenticationException:
+            raise Exception("Falha na autenticação. Verifique as credenciais.")
+        except paramiko.SSHException as e:
+            raise Exception(f"Erro na conexão SSH: {str(e)}")
+        #comando de enable e config para ficar no modo de configuração da olt
+        self.client.exec_command("en")
+        self.client.exec_command("conf")
+
+    def _ssh_execute(self, command):
+        stdin, stdout, stderr = self.client.exec_command(command)
+        error = stderr.read().decode('utf-8')
+        if error:
+            raise Exception(f"Erro ao executar comando '{command}': {error}")
+        return stdout.read().decode('utf-8')
+    def _define_boards(self, keyword, target_list):
+        stdout, stderr = self._ssh_execute("display board 0\n")
+        stdout = stdout.split("\n")
+        for line in stdout:
+            if any(modelo in line for modelo in self.MODELOS_PON_PORTS) and keyword in line:
+                parts = line.split()
+                if len(parts) > 0:
+                    try:
+                        target_list.append(int(parts[0]))
+                    except ValueError:
+                        continue
+
+    def define_boards_gpons(self):
+        self._define_boards("Normal", self.boards_pons)
+
+    def defines_boards_autofind(self):
+        self._define_boards("AutoFind", self.boards_pons_autofind)
